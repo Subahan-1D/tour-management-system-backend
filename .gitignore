@@ -1,6 +1,4 @@
 node_modules
 .env
 
-# development branch
-git config --global user.name "MD SUBAHAN ISLAM"
-git config --global user.email "subahanislam523@gmail.com"
+
