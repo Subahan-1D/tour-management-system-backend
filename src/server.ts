@@ -3,6 +3,7 @@ import { Server } from "http";
 import mongoose from "mongoose";
 import { envVars } from "./app/config/env";
 import app from "./app";
+import { seedSuperAdmin } from "./app/utils/seedSuperAdmin";
 
 let server: Server;
 
@@ -17,7 +18,12 @@ const startServer = async () => {
     console.log(error);
   }
 };
-startServer();
+// IFE function
+(async () => {
+ await startServer();
+ await seedSuperAdmin();
+})();
+// super admin
 
 process.on("unhandledRejection", (err) => {
   console.log("unhandled Rejection detected... Server shuting down..", err);

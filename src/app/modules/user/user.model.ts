@@ -9,8 +9,6 @@ const authProviderSchema = new Schema<IAuthProvider>(
   },
   { timestamps: true, _id: false }
 );
-// Hell
-//Hello
 const userSchema = new Schema<IUser>(
   {
     name: { type: String, require: true },
