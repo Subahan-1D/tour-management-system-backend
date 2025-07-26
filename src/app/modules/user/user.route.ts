@@ -2,17 +2,14 @@
 import { Router } from "express";
 import { UserControllers } from "./user.controller";
 import { createUserZodSchema, updateUserZodSchema } from "./user.validation";
-import {
-  validatedRequest,
-  validatedResponse,
-} from "../../middlewares/validatedRequest";
+import { validatedRequest } from "../../middlewares/validatedRequest";
 import { Role } from "./user.interface";
 import { checkAuth } from "../../middlewares/authCheck";
 const router = Router();
 
 router.post(
   "/register",
-  validatedResponse(createUserZodSchema),
+  validatedRequest(createUserZodSchema),
   UserControllers.createUser
 );
 router.get(
