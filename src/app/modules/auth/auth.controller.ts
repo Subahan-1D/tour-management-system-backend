@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 /* eslint-disable @typescript-eslint/no-unused-vars */
 import { NextFunction, Request, Response } from "express";
 import { catchAsync } from "../../utils/catchAsync";
@@ -9,29 +10,39 @@ import { setAuthCookie } from "../../utils/setCookie";
 import { JwtPayload } from "jsonwebtoken";
 import { createUserTokens } from "../../utils/userTokens";
 import { envVars } from "../../config/env";
+import passport from "passport";
 
 const credentialsLogin = catchAsync(
   async (req: Request, res: Response, next: NextFunction) => {
-    const loginInfo = await authServices.credentialsLogin(req.body);
+    // const loginInfo = await authServices.credentialsLogin(req.body);
 
-    // res.cookie("accessToken", loginInfo.accessToken, {
-    //   httpOnly: true,
-    //   secure: false,
-    // });
+    passport.authenticate("local", async (err: any, user: any, info: any) => {
+      if (err) {
+        // return next(err);
+        return next(new AppError(401, err));
+      }
 
-    // res.cookie("refreshToken", loginInfo.refreshToken, {
-    //   httpOnly: true,
-    //   secure: false,
-    // });
+      if (!user) {
+        // return new AppError(401, info.message);
+        return next(new AppError(401, info.message));
+      }
 
-    setAuthCookie(res, loginInfo);
+      const userTokens = await createUserTokens(user);
 
-    sendResponse(res, {
-      statusCode: httpStatus.OK,
-      message: " User Logged Successfully",
-      success: true,
-      data: loginInfo,
-    });
+      delete user.toObject().password;
+      const { password: pass, ...rest } = user.toObject();
+      setAuthCookie(res, userTokens);
+      sendResponse(res, {
+        statusCode: httpStatus.OK,
+        message: " User Logged Successfully",
+        success: true,
+        data: {
+          accessToken: userTokens.accessToken,
+          refreshToken: userTokens.refreshToken,
+          user: rest,
+        },
+      });
+    })(req, res, next);
   }
 );
 const getNewAccessToken = catchAsync(
