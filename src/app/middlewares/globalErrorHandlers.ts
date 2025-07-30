@@ -4,6 +4,11 @@
 import { NextFunction, Request, Response } from "express";
 import { envVars } from "../config/env";
 import AppError from "../errorHelpers/AppError";
+import { handleDuplicateError } from "../helpers/handleDuplicateError";
+import { handleCastError } from "../helpers/handleCastError";
+import { handleZodError } from "../helpers/handleZodError";
+import { handleValidationError } from "../helpers/handleValidationError";
+import { TErrorSources } from "../interfaces/errorTypes";
 
 export const globalErrorHandlers = (
   err: any,
@@ -11,46 +16,36 @@ export const globalErrorHandlers = (
   res: Response,
   next: NextFunction
 ) => {
-  /**
-   * mongoose
-   * zod
-   */
-  /**
-   * mongodb
-   * cast error
-   * duplicate error
-   * validation error
-   */
-  const errorSources: any = [
-    // {
-    //   path: "isDeleted",
-    //   message: "Cast Failed",
-    // },
-  ];
+  if (envVars.node_env === "development") {
+    console.log(err);
+  }
+  let errorSources: TErrorSources[] = [];
   let statusCode = 500;
   let message = `Something went rong`;
   // duplicate error
   if (err.code === 11000) {
-    console.log("Duplicate Error", err.message);
-
-    const matchedArray = err.message.match(/"([^"]+)"/);
-    statusCode = 400;
-    message = `${matchedArray[1]} already exists.`;
+    const simplefiedError = handleDuplicateError(err);
+    statusCode = simplefiedError.statusCode;
+    message = simplefiedError.message;
   }
   // object error and castError
   else if (err.name === "CastError") {
-    (statusCode = 400),
-      (message = "Invalid mongodb ObjectId . Please provide valid _id");
+    const simplefiedCastError = handleCastError(err);
+    statusCode = simplefiedCastError.statusCode;
+    message = simplefiedCastError.message;
+  }
+  // mongoose validation error
+  else if (err.name === "ZodError") {
+    const simplefiedZodError = handleZodError(err);
+    statusCode = simplefiedZodError.statusCode;
+    message = simplefiedZodError.message;
+    errorSources = simplefiedZodError.errorSources as TErrorSources[];
   } else if (err.name === "ValidationError") {
-    statusCode = 400;
-    const errors = Object.values(err.errors);
-    errors.forEach((errorObject: any) =>
-      errorSources.push({
-        path: errorObject.path,
-        message: errorObject.message,
-      })
-    );
-    message = err.message;
+    const simplefiedValidationError = handleValidationError(err);
+
+    statusCode = simplefiedValidationError.statusCode;
+    errorSources = simplefiedValidationError.errorSources as TErrorSources[];
+    message = simplefiedValidationError.message;
   } else if (err instanceof AppError) {
     statusCode = err.statusCode;
     message = err.message;
@@ -62,7 +57,7 @@ export const globalErrorHandlers = (
     success: false,
     message,
     errorSources,
-    // err,
+    err: envVars.node_env === "development" ? err : null,
     stack: envVars.node_env === "development" ? err.stack : null,
   });
 };
