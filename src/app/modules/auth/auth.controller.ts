@@ -91,12 +91,50 @@ const logout = catchAsync(
     });
   }
 );
+
+const setPassword = catchAsync(
+  async (req: Request, res: Response, next: NextFunction) => {
+    const { password } = req.body;
+    const decodedToken = req.user as JwtPayload;
+    await authServices.setPassword(decodedToken.userId, password);
+    sendResponse(res, {
+      statusCode: httpStatus.OK,
+      message: "Password Change successfully",
+      success: true,
+      data: null,
+    });
+  }
+);
 const resetPassword = catchAsync(
+  async (req: Request, res: Response, next: NextFunction) => {
+    const decodedToken = req.user;
+    await authServices.resetPassword(req.body, decodedToken as JwtPayload);
+    sendResponse(res, {
+      statusCode: httpStatus.OK,
+      message: "Password Change successfully",
+      success: true,
+      data: null,
+    });
+  }
+);
+const forgotPassword = catchAsync(
+  async (req: Request, res: Response, next: NextFunction) => {
+    const { email } = req.body;
+    await authServices.forgotPassword(email);
+    sendResponse(res, {
+      statusCode: httpStatus.OK,
+      message: "Email Send Csuccessfully",
+      success: true,
+      data: null,
+    });
+  }
+);
+const changePassword = catchAsync(
   async (req: Request, res: Response, next: NextFunction) => {
     const newPassword = req.body.newPassword;
     const oldPassword = req.body.oldPassword;
     const decodedToken = req.user;
-    await authServices.resetPassword(
+    await authServices.changePassword(
       oldPassword,
       newPassword,
       decodedToken as JwtPayload
@@ -134,6 +172,9 @@ export const authControllers = {
   credentialsLogin,
   getNewAccessToken,
   logout,
+  changePassword,
   resetPassword,
+  forgotPassword,
+  setPassword,
   googleCallbackController,
 };

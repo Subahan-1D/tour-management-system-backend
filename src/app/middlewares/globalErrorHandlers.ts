@@ -9,8 +9,9 @@ import { handleCastError } from "../helpers/handleCastError";
 import { handleZodError } from "../helpers/handleZodError";
 import { handleValidationError } from "../helpers/handleValidationError";
 import { TErrorSources } from "../interfaces/errorTypes";
+import { deleteImageFromCLoudinary } from "../config/cloudinary.config";
 
-export const globalErrorHandlers = (
+export const globalErrorHandlers =async (
   err: any,
   req: Request,
   res: Response,
@@ -18,6 +19,18 @@ export const globalErrorHandlers = (
 ) => {
   if (envVars.node_env === "development") {
     console.log(err);
+  }
+
+// single image
+  if(req.file){
+    await deleteImageFromCLoudinary(req.file.path)
+  }
+  // multiple image er jonno
+
+  if(req.files && Array.isArray(req.files) && req.files.length){
+    const imageUrls = (req.files as Express.Multer.File[]).map((file) => file.path)
+
+    await Promise.all(imageUrls.map(url => deleteImageFromCLoudinary(url)))
   }
   let errorSources: TErrorSources[] = [];
   let statusCode = 500;

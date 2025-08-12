@@ -1,7 +1,9 @@
 import { Response } from "express";
-import { success } from "zod";
 
 interface TMeta {
+  page: number;
+  limit: number;
+  totalPage: number;
   total: number;
 }
 
@@ -10,7 +12,7 @@ interface TResponse<T> {
   message: string;
   success: boolean;
   data: T;
-  meta?: TMeta;
+  meta ?: TMeta;
 }
 
 const sendResponse = <T>(res: Response, data: TResponse<T>) => {
@@ -18,9 +20,10 @@ const sendResponse = <T>(res: Response, data: TResponse<T>) => {
     statusCode: data.statusCode,
     message: data.message,
     success: data.success,
-    data: data.data,
     meta: data.meta,
+    data: data.data,
   });
 };
+
 
 export default sendResponse;
