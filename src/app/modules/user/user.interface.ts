@@ -34,7 +34,7 @@ export interface IUser {
   isDeleted?: boolean;
   isActive?: IsActive;
   isVerified?: boolean;
-  auths?: IAuthProvider[];
+  auths: IAuthProvider[];
   bookings?: Types.ObjectId[];
   guides?: Types.ObjectId[];
 }

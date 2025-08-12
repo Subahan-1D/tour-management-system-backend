@@ -54,7 +54,11 @@ const updateUser = catchAsync(
     // ) as JwtPayload;
     const verifiedToken = req.user;
     const payload = req.body;
-    const user = await UserServices.updateUser(userId, payload, verifiedToken as JwtPayload)
+    const user = await UserServices.updateUser(
+      userId,
+      payload,
+      verifiedToken as JwtPayload
+    );
 
     sendResponse(res, {
       statusCode: httpStatus.CREATED,
@@ -76,7 +80,10 @@ const updateUser = catchAsync(
 // };
 const getAllUser = catchAsync(
   async (req: Request, res: Response, next: NextFunction) => {
-    const result = await UserServices.getAllUsers();
+    const query = req.query;
+    const result = await UserServices.getAllUsers(
+      query as Record<string, string>
+    );
 
     // res.status(httpStatus.OK).json({
     //   success: true,
@@ -92,10 +99,29 @@ const getAllUser = catchAsync(
     });
   }
 );
+const getMe = catchAsync(
+  async (req: Request, res: Response, next: NextFunction) => {
+    const decodedToken = req.user as JwtPayload;
+    const result = await UserServices.getMe(decodedToken.userId);
+
+    // res.status(httpStatus.OK).json({
+    //   success: true,
+    //   message: "All User Retrieve Successfully",
+    //   data: users,
+    // });
+    sendResponse(res, {
+      statusCode: httpStatus.CREATED,
+      message: "All User Retrieve Successfully",
+      success: true,
+      data: result.data,
+    });
+  }
+);
 
 export const UserControllers = {
   createUser,
   getAllUser,
+  getMe,
   updateUser,
 };
 

@@ -3,7 +3,7 @@ import { Router } from "express";
 import { UserControllers } from "./user.controller";
 import { createUserZodSchema, updateUserZodSchema } from "./user.validation";
 import { validatedRequest } from "../../middlewares/validatedRequest";
-import { Role } from "./user.interface";
+import { Role } from './user.interface';
 import { checkAuth } from "../../middlewares/authCheck";
 const router = Router();
 
@@ -16,6 +16,10 @@ router.get(
   "/all-users",
   checkAuth(Role.ADMIN, Role.SUPER_ADMIN),
   UserControllers.getAllUser
+);
+router.get(
+  "/me",
+  checkAuth(...Object.values(Role)),UserControllers.getMe
 );
 router.patch(
   "/:id",
